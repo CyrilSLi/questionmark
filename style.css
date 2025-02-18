@@ -52,7 +52,7 @@ p:empty, p:has(a:empty), p:has(a[style*="display: none"]) {
 }
 .img-bank {
     min-width: 314px;
-    min-height: 239px;
+    height: 239px;
     margin: 7px;
     background-color: #002800;
     border: none;

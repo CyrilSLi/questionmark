@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Question Mark Project</title>
+    <meta charset="utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body onload="brython (2)">
+    <noscript>
+        <p>JavaScript is required to use this website.</p>
+    </noscript>
+    <script type = "text/python">
+        from browser import document, html, timer, window
+        from browser.local_storage import storage
+        import random
+
+        global skip_wait
+        skip_wait = False
+        print = window.console.log
+
+        def dragstart (event):
+            if not (type (event.target) == html.IMG and event.target.classList.contains ("img-drag")):
+                event.preventDefault ()
+                return
+            event.dataTransfer.setData ("text/plain", event.target.id)
+            event.dataTransfer.dropEffect = "move"
+        window.addEventListener ("dragstart", dragstart)
+        def dragover (event):
+            event.preventDefault ()
+            event.dataTransfer.dropEffect = "move"
+        window.addEventListener ("dragover", dragover)
+
+        def remove_placeholder ():
+            for el in document.getElementsByClassName ("img-container"):
+                if len (el.getElementsByTagName ("img")):
+                    for i in el.getElementsByClassName ("img-placeholder"):
+                        i.remove ()
+                elif not el.getElementsByClassName ("img-placeholder"):
+                    el <= html.P (el.dataset.placeholder, Class = "img-placeholder")
+                    if "ondrop" in el.dataset:
+                        globals () [el.dataset.ondrop] ()
+        def drop (event):
+            parentEl = event.target.parentElement
+            def remove_current ():
+                for img in parentEl.getElementsByTagName ("img"):
+                    document.getElementById (img.dataset.parent).appendChild (img)
+            event.preventDefault ()
+            origin = document [event.dataTransfer.getData ("text/plain")]
+            if event.target.classList.contains ("droppable") or parentEl.classList.contains ("droppable"):
+                el = event.target if event.target.classList.contains ("droppable") else parentEl
+                remove_current ()
+                el.appendChild (origin)
+                remove_placeholder ()
+                if el.classList.contains ("img-container") and "ondrop" in origin.dataset:
+                    globals () [origin.dataset.ondrop] ()
+        window.addEventListener ("drop", drop)
+
+        global scroll_timers
+        scroll_timers = {}
+        def scroll_text (el, text, speed, delay = 0, callback = lambda: None):
+            global skip_wait
+            if el in scroll_timers:
+                for t in scroll_timers.get (el, []):
+                    timer.clear_timeout (t)
+                scroll_timers [el] = []
+            el.innerHTML = ""
+            speed = 0 if skip_wait else speed
+            delay = 0 if skip_wait else delay
+            index = 0
+            def scroll ():
+                nonlocal callback, el, index, speed, text
+                if index < len (text):
+                    if text [index] == "\n":
+                        el.innerHTML += "<br>"
+                    else:
+                        el.innerHTML += text [index]
+                    index += 1
+                    scroll_timers.setdefault (el, []).append (timer.set_timeout (scroll, speed))
+                else:
+                    for t in scroll_timers.get (el, []):
+                        timer.clear_timeout (t)
+                    scroll_timers.setdefault (el, []).append (timer.set_timeout (callback, speed))
+                timer.set_timeout (scroll_site, 0)
+            scroll_timers.setdefault (el, []).append (timer.set_timeout (scroll, delay))
+
+        def scroll_site ():
+            document ["site"].scrollTop = document ["site"].scrollHeight
+        
+        def show_q (question):
+            document [question].style.display = "block"
+            document [question].classList.add ("fade-in")
+            scroll_site ()
+
+        def unbind (el):
+            el.parentNode.replaceChild (el.cloneNode (True), el)
+
+        for i in document.getElementsByClassName ("img-container"):
+            i <= html.P (i.dataset.placeholder, Class = "img-placeholder")
+
+
+        
+        scroll1 = lambda: scroll_text (document ["scroll1"], "You are working at a cattle farm in West Sussex, UK.", 10, 500, scroll2)
+        scroll2 = lambda: scroll_text (
+            document ["scroll2"],
+            "Increased costs of production and demand for more nutritious meat have made you reconsider the feed you use. "
+            "Currently all your cattle are grass-fed, however producing enough grass and hay is getting more expensive so you are looking for alternative sources of feed.",
+            10,
+            500,
+            lambda: (show_q ("question1"), add_submit1 ("none"))
+        )
+        def add_submit1 (choice):
+            unbind (document ["submit1"])
+            document ["submit1"].bind ("click", lambda ev: submit1 (choice, ev))
+            document ["submit1"].style.display = "block"
+        def submit1 (choice, ev):
+            for i in list (document ["question1"].getElementsByClassName ("img-drag")):
+                i.classList.remove ("img-drag")
+            ev.target.style.visibility = "hidden"
+            if choice == "corn":
+                prompt = "You decide to add corn. What effect do you think this will have on cattle?"
+                options = [
+                    " Increase acidity in stomachs",
+                    " Increase alkalinity in stomachs",
+                    " Cause an excessive intake of starches",
+                    " Cause an excessive intake of yellow colouring",
+                    " Nothing adverse will happen"
+                ]
+            elif choice == "mbm":
+                prompt = "You decide to add MBM. What is a possible consequence of feeding cattle-based MBM to cattle?"
+                options = [
+                    " They will refrain from eating the feed as it is akin to cannibalism",
+                    " A specific type of protein will cause a transmissible disease",
+                    " Too much calcium from bone sources will cause dietary imbalance",
+                    " The MBM will grow mold and bacteria if not immediately consumed after production",
+                    " Nothing adverse will happen"
+                ]
+            elif choice == "none":
+                prompt = (
+                    "You decide not to change the feed. "
+                    "Your production costs keep increasing, and one day you find that you are no longer turning a profit. "
+                    "Although there is some demand for higher-priced grass fed beef, the market is too competitive for you to keep up.\n\n"
+                    "Please refresh the page and try another option."
+                )
+
+            scroll_text (
+                document ["scroll4"],
+                prompt,
+                10,
+                0
+            )
+            if choice == "none":
+                raise SystemExit
+            random.shuffle (options)
+            for j, i in enumerate (options):
+                choice_el = document ["q2-c" + str (j + 1)]
+                choice_el.innerHTML = i
+                choice_el.bind ("click", lambda ev: submit2 (choice, True if "acidity" in ev.target.innerHTML or "transmissible" in ev.target.innerHTML else False))
+
+        def submit2 (path, correct):
+            for i in range (1, 6):
+                unbind (document ["q2-c" + str (i)])
+            scrollstr = ""
+            if correct:
+                scrollstr += "Correct.\n\n"
+                storage ["score"] = str (int (storage.get ("score", 0)) + 20)
+            else:
+                storage ["score"] = str (int (storage.get ("score", 0)) - 20)
+            if path == "corn":
+                if not correct:
+                    scrollstr = "Incorrect. Adding corn to cattle feed may increase acidity in their stomachs.\n\n"
+                scrollstr += (
+                    "Some of your cattle develop acidosis as a result of ingesting too much grain. "
+                    "They almost stop eating feed, lack the liveliness they were known for before, and have increased heart and breathing rates. "
+                    "A few with more extreme cases end up dead."
+                )
+                document ["source2"].href = "https://www.beefresearch.ca/topics/acidosis-in-beef-cattle/"
+            elif path == "mbm":
+                if not correct:
+                    scrollstr = "Incorrect. Feeding cattle-based MBM to cattle may cause a transmissible disease.\n\n"
+                scrollstr += (
+                    'A Holstein Friesian, the most common breed of cattle on your farm and around the world, started showing some strange symptoms, including "a change in behaviour, aggression and a lack of coordination". '
+                    "You call a veterinary nurse to treat the visible symptoms, but over time more and more cows start to behave in this same way, which now includes nervousness, aggressiveness, and the inability to rise up without assistance."
+                )
+                document ["source2"].href = "https://webarchive.nationalarchives.gov.uk/ukgwa/20060525120000/http://www.bseinquiry.gov.uk/report/volume3/chapterf.htm#515721"
+            document ["source2"].style.display = "block"
+            scrollstr += "\n\nDo you immediately recall and destroy all beef products at the risk of losing all your profits, or pretend nothing is wrong and do business as usual?"
+            scroll_text (
+                document ["scroll5"],
+                scrollstr,
+                1,
+                0,
+                lambda: (show_q ("question3"), add_submit3 (path, correct))
+            )
+
+
+        def add_submit3 (path, correct):
+            unbind (document ["submit3"])
+            document ["submit3"].bind ("click", lambda ev: submit3 (path, correct, ev))
+            document ["submit3"].style.display = "block"
+        
+        def submit3 (path, correct, ev):
+            for i in list (document ["question3"].getElementsByClassName ("img-drag")):
+                i.classList.remove ("img-drag")
+            ev.target.style.visibility = "hidden"
+            scrollstr = "Here is what could happen:\n\n"
+            if path == "corn":
+                scrollstr += (
+                    "The forage diet which cattle have evolved to consume is relatively neutral on the pH scale, and their gut microbiome has adapted to this. "
+                    "Corn and other grain-based diets increase the acidity in the stomachs, disrupting the delicate microbiome balance and allowing microorganisms to develop acid resistance. "
+                    "E. Coli is commonly found in cattle and can be spread through meat products and environmental contamination from sources like feces, but they normally do not cause issues in humans since they cannot survive in the acidic environment of the human stomach. "
+                    "However, these acid-resistant strains, specifically H157:N7, can thrive in humans and wreak havoc."
+                )
+            elif path == "mbm":
+                scrollstr += (
+                    "Bovine spongiform encephalopathy (BSE) is a fatal neurodegenerative disease (a disease where neurons lose function over time) caused by prions. "
+                    "Prions are misfolded proteins which can cause normal variants of the proteins to become misfolded, causing cell death which spreads across the brain. "
+                    "Variant Creutzfeldt-Jakob Disease (vCJD) is a fatal incurable disease in humans with the primary cause being consuming beef from cows with BSE."
+                )
+            if correct:
+                scrollstr += "\n\nAs a bonus for correctly answering the question, you gain 50 points and the odds of things going wrong have been reduced."
+                luck = random.random () < 0.8 # 20% chance of bad luck
+            else:
+                scrollstr += "\n\nThe odds of things going wrong have increased due to your incorrect answer."
+                luck = random.random () < 0.4
+            
+
+            scroll_text (
+                document ["scroll6"],
+                scrollstr,
+                1,
+                0,
+                lambda: window.setTimeout (lambda: final (path, luck), 3000)
+            )
+            scroll_text (
+                document ["scroll7"],
+                "Awaiting news as time goes on...",
+                30,
+                0
+            )
+        
+        def final (path, luck):
+            recall = not document ["question3-answers"].contains (document ["recall-notice"]) # whether the recall notice was issued
+            scrollstr = ""
+            if path == "corn":
+                if luck:
+                    scrollstr += (
+                        "Fortunately, acid-resistant E. Coli strains is not present in your beef products. "
+                        "Perhaps your cattle were not exposed to the bacteria, or they were able to fight off the infection.\n\n"
+                    )
+                    if recall:
+                        scrollstr += (
+                            "However, the public has lost trust in your brand due to the mass recall and perceived risk of contamination. "
+                            "They question what you may be hiding as the recall was seemingly issued without reason. "
+                            "Your sales decline but you are able to downsize and stay afloat."
+                        )
+                        storage ["score"] = str (int (storage.get ("score", 0)) + 60)
+                    else:
+                        scrollstr += (
+                            "Your cattle continue to produce high quality beef, and you are able to grow and increase your profits. "
+                        )
+                        storage ["score"] = str (int (storage.get ("score", 0)) + 100)
+                else:
+                    scrollstr += (
+                        "Unfortunately, acid-resistant E. Coli strains have spread throught your products. "
+                        "Infections have been reported across the country, with symptons ranging from diarrhea to kidney failure. "
+                    )
+                    if recall:
+                        scrollstr += (
+                            "You voluntarily recalled all possibly contaminated products. "
+                            "The public praised your quick action and accurate judgement, and you were able to recover from the incident."
+                        )
+                        storage ["score"] = str (int (storage.get ("score", 0)) + 80)
+                    else:
+                        scrollstr += (
+                            "You were forced by the government to recall affected products. "
+                            "This has left a terrible impression on your brand, and you are forced to close down your farm."
+                        )
+                        storage ["score"] = str (int (storage.get ("score", 0)) - 100)
+            elif path == "mbm":
+                if luck:
+                    scrollstr += (
+                        "You have gotten extremely lucky that no material from infected cattle found its way into the MBM. "
+                        "The abnormal cattle were quickly identified and destroyed before further contamination could occur.\n\n"
+                    )
+                    if recall:
+                        scrollstr += (
+                            "Perhaps due to general unfamiliarity with the disease, the recall notice did not lead to much public concern. "
+                            "You continue to do business relatively unscathed."
+                        )
+                        storage ["score"] = str (int (storage.get ("score", 0)) + 80)
+                    else:
+                        scrollstr += (
+                            "Your cattle continue to produce high quality beef, and you are able to grow and increase your profits. "
+                        )
+                        storage ["score"] = str (int (storage.get ("score", 0)) + 100)
+                else:
+                    if recall:
+                        scrollstr += (
+                            "Routine tests by the government have found that some of your cattle were infected with BSE. "
+                            "Fortunately, you were able to avert a crisis by recalling all possibly contaminated products in advance. "
+                            "Some praise you for your quick action, but others are concerned about future outbreaks on your farm."
+                        )
+                        storage ["score"] = str (int (storage.get ("score", 0)) + 50)
+                    else:
+                        scrollstr += (
+                            "Several people have been diagnosed with vCJD, and it is traced back to your farm. "
+                            "News of this rare fatal disease spreads quickly, and your farm is shut down by the government. "
+                            "Family of the victims demand compensation, and some are considering legal action."
+                        )
+                        storage ["score"] = str (int (storage.get ("score", 0)) - 200)
+            
+            scroll_text (
+                document ["scroll7"],
+                scrollstr,
+                1,
+                0,
+                lambda: window.setTimeout (reflection, 3000)
+            )
+            if "bse" not in storage.get ("completed", ""):
+                storage ["completed"] = storage.get ("completed", "") + " bse"
+
+        def reflection ():
+            scroll_text (
+                document ["scroll8"],
+                "\n\n\n\nThis game demonstrates a simplified scenario of the risks and rewards of different feed choices. "
+                "A major BSE outbreak will likely never happen in the future due to strict regulations about the use of ruminant protein in cattle feed. "
+                "However, E. Coli outbreaks do still occur, and it is critical to watch for recalls and follow food safety guidelines at all times. "
+                "\n\nReload the page for a chance to see a different outcome (there are 8 in total)."
+                "\n\nThank you for playing!",
+                10,
+                0
+            )
+            document ["source3"].style.display = "block"
+
+        def scroll3_clear ():
+            scroll_text (document ["scroll3"], "", 0, 0)
+            document ["source1"].style.display = "none"
+            add_submit1 ("none")
+        def scroll3_corn ():
+            document ["submit1"].style.display = "none"
+            scroll_text (
+                document ["scroll3"],
+                "Corn is a cheap, widely available, and energy-dense feed source. "
+                "It is one of the most widely grown crops in the world, and many innovations have been made over the years to increase its efficiency. "
+                "The addition of corn products into animal feed is a widespread practice so you believe it should be relatively safe.",
+                5,
+                0,
+                lambda: add_submit1 ("corn")
+            )
+            document ["source1"].href = "https://www.beefresearch.ca/topics/feed-grains-for-beef-cattle/#corn"
+            document ["source1"].style.display = "block"
+        def scroll3_mbm ():
+            document ["submit1"].style.display = "none"
+            scroll_text (
+                document ["scroll3"],
+                'Meat and bone meal is a "dry, ground, rendered product containing both bone and animal tissues, not including hair, hooves, hide and horn". '
+                "It is a highly nutritious material rich in proteins and commonly used to increase amino acid content in animal feed. "
+                "Since your farm's primary livestock is cattle, your MBM production mainly originates from the rendering of cattle, a process which converts waste animal tissue into usable materials.",
+                5,
+                0,
+                lambda: add_submit1 ("mbm")
+            )
+            document ["source1"].href = "https://www.sciencedirect.com/topics/agricultural-and-biological-sciences/meat-and-bone-meal"
+            document ["source1"].style.display = "block"
+
+        scroll1 () 
+
+    </script>
+    <div id="site">
+        <p id="scroll1"></p>
+        <p id="scroll2"></p>
+        <br>
+        <div style="display: none; opacity: 0;" id="question1">
+            <div class="img-container droppable" data-placeholder="Drag the feed type you want to add, or leave blank to not add any." data-ondrop="scroll3_clear"></div>
+            <div display="inline-block" class="droppable img-bank" id="question1-answers">
+                <img src="media/corn_feed.jpg" alt="Corn feed" draggable="true" id="corn-feed" class="img-drag img-round" data-parent="question1-answers" data-ondrop="scroll3_corn" />
+                <img src="media/meat_and_bone_meal.jpg" alt="Meat and bone meal" draggable="true" id="meat-and-bone-meal" class="img-drag img-round" data-parent="question1-answers" data-ondrop="scroll3_mbm" />
+            </div>
+        </div>
+        <br>
+        <p id="scroll3"></p>
+        <p><a id="source1" href="" target="_blank" style="display: none;">Source / Further information</a></p>
+        <button id="submit1" style="display: none;">Submit</button>
+        <p id="scroll4"></p>
+        <div id="question2">
+            <p><a id="q2-c1"></a></p>
+            <p><a id="q2-c2"></a></p>
+            <p><a id="q2-c3"></a></p>
+            <p><a id="q2-c4"></a></p>
+            <p><a id="q2-c5"></a></p>
+        </div>
+        <br>
+        <p id="scroll5"></p>
+        <p><a id="source2" href="" target="_blank" style="display: none;">Source / Further information</a></p>
+        <br>
+        <div style="display: none; opacity: 0;" id="question3">
+            <div class="img-container droppable" data-placeholder="Drag the recall notice here to issue it, or leave blank to not issue any."></div>
+            <div display="inline-block" class="droppable img-bank" id="question3-answers">
+                <img src="media/recall.jpg" alt="Recall notice" draggable="true" id="recall-notice" class="img-drag img-round" data-parent="question3-answers" />
+            </div>
+        </div>
+        <button id="submit3" style="display: none;">Submit</button>
+        <br>
+        <p id="scroll6"></p>
+        <br>
+        <p id="scroll7"></p>
+        <p id="scroll8"></p>
+        <p><a id="source3" href="https://inspection.canada.ca/en/animal-health/terrestrial-animals/diseases/reportable/bovine-spongiform-encephalopathy" target="_blank" style="display: none;">Source / Further information</a></p>
+    </div>
+    <iframe id="header" src="header.html" sandbox="allow-scripts allow-same-origin allow-top-navigation"></iframe>
+</body>
+</html>

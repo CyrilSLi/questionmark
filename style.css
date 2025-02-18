@@ -1,0 +1,108 @@
+* {
+    margin: 0px;
+    padding: 0px;
+}
+#site {
+    height: calc(100vh - 80px);
+    height: calc(100dvh - 80px);
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+#site::webkit-scrollbar {
+    display: none;
+}
+body {
+    background-color: black;
+    overflow: hidden;
+}
+#map {
+    flex: 1;
+    z-index: 0;
+}
+input, button, p {
+    font-family: Arial, sans-serif;
+    font-size: 24px;
+    text-decoration: none;
+    font-weight: normal;
+    color: white;
+    line-height: 1.15;
+    padding: 3px 0px;
+}
+p:empty, p:has(a:empty), p:has(a[style*="display: none"]) {
+    display: none;
+}
+.img-round {
+    width: 300px;
+    height: 225px;
+    margin: 7px;
+    object-fit: cover;
+    border: none;
+    border-radius: 15px;
+}
+.img-container {
+    width: 314px;
+    height: 239px;
+    margin: 7px;
+    border: 3px white solid;
+    border-radius: 27px;
+}
+.img-bank {
+    min-width: 300px;
+    min-height: 225px;
+    margin: 7px;
+    background-color: #002800;
+    border: none;
+    border-radius: 14px;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.fade-in {
+    animation: 1s ease-in 0s 1 forwards fadeIn;
+}
+.img-placeholder {
+    margin: 20px;
+}
+a {
+    color: lightgreen;
+    text-decoration: underline;
+    font-weight: normal;
+    cursor: pointer;
+}
+a:hover {
+    color: white;
+}
+input, button {
+    border-radius: 5px;
+    padding: 5px 7px;
+    text-decoration: none;
+    font-weight: normal;
+    background-color: darkgreen;
+    color: white;
+    -webkit-appearance: none;
+    border: 1px solid white;
+    margin: 10px 0px;
+}
+h1 {
+    font-family: Arial, sans-serif;
+    font-size: 36px;
+    color: white;
+    font-weight: bold;
+}
+#header {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    height: 40px;
+    width: 100%;
+    border: none;
+}

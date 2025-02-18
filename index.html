@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Question Mark Project</title>
+    <meta charset="utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+        #site {
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+        body {
+            overflow: hidden;
+            background-color: white;
+        }
+        #map {
+            flex: 1;
+            z-index: 0;
+        }
+        h2 {
+            font-family: Arial, sans-serif;
+            font-size: 28px;
+            text-decoration: none;
+            font-weight: normal;
+        }
+        h1 {
+            font-family: Arial, sans-serif;
+            font-size: 36px;
+            font-weight: bold;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+        @keyframes flyIn {
+            from {
+                transform: translateY(100vh);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+        #intro {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+            background-color: rgba(255, 255, 255, 0.7);
+            opacity: 0;
+            animation: 2s ease-in 0s 1 forwards fadeIn;
+            height: 300px;
+            width: 600px;
+            border-radius: 50px;
+            border: 5px rgba(255, 255, 255, 1) solid;
+        }
+        .title {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            opacity: 0;
+            animation: 4s ease-out 2s 1 forwards fadeIn;
+        }
+        .subtitle {
+            position: absolute;
+            top: calc(80px + var(--i) * 40px);
+            width: 100%;
+            text-align: center;
+            padding: 5px;
+            transform: translateY(100vh);
+            animation: 2s ease-out calc(3s + var(--i) * 0.5s) 1 forwards flyIn;
+        }
+        .block {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 40px);
+            z-index: 100;
+        }
+        body.fadeOut {
+            animation: 3s ease-out 0s 1 forwards fadeOut;
+        }
+        #intro.fadeOut {
+            animation: 1s ease-out 0s 1 forwards fadeOut;
+        }
+        #header {
+            position: fixed;
+            bottom: 0px;
+            left: 0px;
+            height: 40px;
+            width: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body onload="brython (0)">
+    <noscript>
+        <p>JavaScript is required to use this website.</p>
+    </noscript>
+    <script type = "text/python">
+        from browser import document, ajax, html, window, timer
+        from browser.local_storage import storage
+
+        mt = window.maptalks
+
+        Map = mt.Map.new ("map", {
+            "center": [0, 0],
+            "zoom": 2,
+            "maxZoom": 19,
+            "seamlessZoom": True,
+            "attribution": {
+                "content": "<a href = 'https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+            },
+            "baseLayer": mt.GroupTileLayer.new ("Base", [
+                mt.TileLayer.new ("OSM Standard", {
+                    "urlTemplate": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    "maxZoom": 19
+                })
+            ])
+        })
+        markers = mt.VectorLayer.new ("Markers", None).addTo (Map)
+        
+        def interactive (toggle):
+            Map.setOptions ({
+                "draggable": toggle,
+                "dragPan": toggle,
+                "dragRotate": toggle,
+                "dragPitch": toggle,
+                "scrollWheelZoom": toggle,
+                "touchZoom": toggle,
+                "doubleClickZoom": toggle
+            })
+        interactive (False)
+
+        marker_colors = {}
+        for i in ("sanlu", "gutter", "bse"):
+            if i in storage.get ("completed", "").split ():
+                marker_colors [i] = "lightgreen"
+            else:
+                marker_colors [i] = "red"
+
+        sanluMarker = mt.Marker.new (
+            [114.5088385, 38.0429742], {
+                "symbol": [{
+                    "markerFile": "media/sanlu_logo.png",
+                    "markerWidth": 165,
+                    "markerHeight": 50,
+                    "markerDx": 0,
+                    "markerDy": -20,
+                    "markerOpacity": 1
+                }, {
+                    "markerType": "ellipse",
+                    "markerFill": marker_colors ["sanlu"],
+                    "markerWidth": 20,
+                    "markerHeight": 20
+                }],
+                "cursor": "pointer"
+            }
+        ).addTo (markers)
+
+        gutterMarker = mt.Marker.new (
+            [120.9820179, 23.9739374], {
+                "symbol": [{
+                    "markerFile": "media/gutter_oil.jpg",
+                    "markerWidth": 85,
+                    "markerHeight": 56.5,
+                    "markerDx": 0,
+                    "markerDy": -20,
+                    "markerOpacity": 1
+                }, {
+                    "markerType": "ellipse",
+                    "markerFill": marker_colors ["gutter"],
+                    "markerWidth": 20,
+                    "markerHeight": 20
+                }],
+                "cursor": "pointer"
+            }
+        ).addTo (markers)
+
+        bseMarker = mt.Marker.new (
+            [-0.7404300, 50.9841854], {
+                "symbol": [{
+                    "markerFile": "media/bse_cow.jpg",
+                    "markerWidth": 85,
+                    "markerHeight": 68,
+                    "markerDx": 0,
+                    "markerDy": -20,
+                    "markerOpacity": 1
+                }, {
+                    "markerType": "ellipse",
+                    "markerFill": marker_colors ["bse"],
+                    "markerWidth": 20,
+                    "markerHeight": 20
+                }],
+                "cursor": "pointer"
+            }
+        ).addTo (markers)
+
+        window.setTimeout (lambda: Map.animateTo ({
+            "center": [0, 0],
+            "zoom": 3,
+            "pitch": 60,
+            "bearing": 0
+        }, {
+            "duration": 1500,
+            "easing": "in"
+        }), 500)
+        initTimers, timerTs = [0, 0, 0], window.Date.now () + 2000
+        def initAnimation ():
+            global Map, initTimers, timerTs
+            Map.animateTo ({
+                "center": [114.5088385, 38.0429742],
+                "zoom": 6,
+                "pitch": 60,
+                "bearing": 0
+            }, {
+                "duration": 4000,
+            
+            })
+            timerTs = window.Date.now () + 4000
+            def init1 ():
+                global timerTs
+                Map.animateTo ({
+                    "center": [120.9820179, 23.9739374],
+                    "zoom": 6,
+                    "pitch": 60,
+                    "bearing": 0
+                }, {
+                    "duration": 4000,
+                    "easing": "inAndOut"
+                })
+                timerTs = window.Date.now () + 4000
+            initTimers.append (window.setTimeout (init1, 5000))
+            def init2 ():
+                global timerTs
+                Map.animateTo ({
+                    "center": [-0.7404300, 50.9841854],
+                    "zoom": 6,
+                    "pitch": 60,
+                    "bearing": 0
+                }, {
+                    "duration": 4000,
+                    "easing": "inAndOut"
+                })
+                timerTs = window.Date.now () + 4000
+            initTimers.append (window.setTimeout (init2, 10000))      
+
+        initTimers.append (window.setTimeout (initAnimation, 2000))
+        def initLoop ():
+            global initTimers
+            initTimers.append (window.setInterval (initAnimation, 15000))
+        initTimers.append (window.setTimeout (initLoop, 2000))
+
+        def stopInitLoop (ev):
+            global initTimers
+            for timer in initTimers:
+                window.clearTimeout (timer)
+                window.clearInterval (timer)
+            document ["intro"].classList.add ("fadeOut")
+            def stopInit ():
+                del document ["intro-block"]
+            window.setTimeout (stopInit, 1000)
+            window.setTimeout (lambda: interactive (True), timerTs - window.Date.now ())
+        document ["intro-block"].bind ("click", stopInitLoop)
+        
+        def visitPage (page):
+            document.body.style.backgroundColor = "black"
+            document.body.classList.add ("fadeOut")
+            def link ():
+                nonlocal page
+                window.location.href = page
+            window.setTimeout (link, 2500) # Account for loading time
+        sanluMarker.on ("click", lambda ev: visitPage ("sanlu.html"))
+        gutterMarker.on ("click", lambda ev: visitPage ("gutter.html"))
+        bseMarker.on ("click", lambda ev: visitPage ("bse.html"))
+        
+    </script>
+    <div id="site">
+        <div id="intro-block" class="block">
+            <div id="intro">
+                <h1 class="title">Question Mark Project</h1>
+                <h2 class="subtitle" style="--i: 0">Cyril Li, Zack Dong</h2>
+                <h2 class="subtitle" style="--i: 1">Geographic Issues of the 21st Century 20F</h2>
+                <h2 class="subtitle" style="--i: 2">Mr. Enns</h2>
+                <h2 class="subtitle" style="--i: 3">November 26, 2024</h2>
+                <h2 class="subtitle" style="--i: 4; font-weight: bold;">Click anywhere to begin!</h2>
+            </div>
+        </div>
+        <div id="map"></div>
+        <iframe id="header" src="header.html" sandbox="allow-scripts allow-same-origin allow-top-navigation"></iframe>
+    </div>
+</body>
+</html>

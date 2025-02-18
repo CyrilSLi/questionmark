@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Question Mark Project</title>
+    <meta charset="utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.min.js"></script>
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+        body {
+            background-color: darkgreen;
+            height: 40px;
+            overflow: hidden;
+            display: flex;
+        }
+        h1, p {
+            flex-direction: row;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            margin: 5px 10px;
+            color: white;
+        }
+        h1, .bold {
+            font-weight: bold;
+        }
+        p {
+            font-weight: normal;
+        }
+        span {
+            flex: 1;
+        }
+        .bold {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body onload="brython (2)">
+    <noscript>
+        <p>JavaScript is required to use this website.</p>
+    </noscript>
+    <script type = "text/python">
+        from browser import document, timer, window
+        from browser.local_storage import storage
+        def reload (reset = False):
+            window.parent.location = "index.html"
+            if reset:
+                storage.clear ()
+        document ["reset"].bind ("click", lambda ev: reload (True))
+        document ["reload"].bind ("click", lambda ev: reload ())
+
+        def update ():
+            document ["completed"].innerHTML = f"Completed: {len (storage.get ('completed', '').split ())}/3"
+            document ["score"].innerHTML = f"Score: {storage.get ('score', 0)}"
+        timer.set_interval (update, 1000)
+        update ()
+    </script>
+    <h1>Question Mark Project</h1>
+    <p id="completed"></p>
+    <p id="score"></p>
+    <span></span>
+    <p id="reload" class="bold">Home</p>
+    <p id="reset" class="bold">Reset</p>
+</body>
+</html>

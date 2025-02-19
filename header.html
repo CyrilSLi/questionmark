@@ -37,7 +37,7 @@
         }
     </style>
 </head>
-<body onload="brython (2)">
+<body onload="brython (0)">
     <noscript>
         <p>JavaScript is required to use this website.</p>
     </noscript>
@@ -52,7 +52,7 @@
         document ["reload"].bind ("click", lambda ev: reload ())
 
         def update ():
-            document ["completed"].innerHTML = f"Completed: {len (storage.get ('completed', '').split ())}/3"
+            document ["completed"].innerHTML = f"Completed: {len (storage.get ('completed', '').split ())}/2"
             document ["score"].innerHTML = f"Score: {storage.get ('score', 0)}"
         timer.set_interval (update, 1000)
         update ()

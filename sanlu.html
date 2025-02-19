@@ -6,6 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.min.js"></script>
     <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="media/favicon.ico">
 </head>
 <body onload="brython (2)">
     <noscript>
@@ -17,7 +18,7 @@
         import random
 
         global skip_wait
-        skip_wait = True # False
+        skip_wait = False
         print = window.console.log
 
         def dragstart (event):
@@ -137,8 +138,8 @@
                 prompt = (
                     "Due to your high costs of production, you have to overprice your product to try to earn a profit. "
                     "This makes your brand uncompetitive against other companies which often fake the quality of their products. "
-                    "Although you are an honest company the market simply does not care, and after less than a year you go bankrupt.\n\n"
-                    "Please refresh the page and try another option."
+                    "Although you are an honest company, the market simply does not care and your sales decline."
+                    "You are forced to downsize and watch as your competitors take over the market."
                 )
 
             scroll_text (
@@ -148,7 +149,11 @@
                 0
             )
             if choice == "none":
-                raise SystemExit
+                if "sanlu" not in storage.get ("completed", ""):
+                    storage ["completed"] = storage.get ("completed", "") + " sanlu"
+                storage ["score"] = str (int (storage.get ("score", 0)) - 20)
+                window.setTimeout (reflection, 3000)
+                return
             options = [
                 "Nothing adverse will happen",
                 "Fatigue and lack of concentration",
@@ -178,160 +183,100 @@
                     scrollstr = "Incorrect. Adding water to milk may increase product volume, but it dilutes the content of proteins and other nutrients."
             scrollstr += "\nThe lack of proteins in milk may cause all of the above symptoms."
 
-            document ["source2"].href = "https://www.nutritionnews.abbott/pregnancy-childhood/kids-growth/the-signs-of-protein-deficiency-in-kids/"
             document ["source2"].style.display = "block"
             scroll_text (
                 document ["scroll6"],
                 scrollstr,
                 1,
                 0,
-                scroll7
+                lambda: window.setTimeout (lambda: scroll7 (path, correct), 1000)
             )
-        
-        scroll7 = lambda: scroll_text (
-            document ["scroll7"],
-            "Recall blah blah blah",
-            1,
-            500,
-            lambda: (show_q ("question3"), add_submit3 (path, correct))
-        )
 
-
-        def add_submit3 (path, correct):
-            unbind (document ["submit3"])
-            document ["submit3"].bind ("click", lambda ev: submit3 (path, correct, ev))
-            document ["submit3"].style.display = "block"
-        
-        def submit3 (path, correct, ev):
-            for i in list (document ["question3"].getElementsByClassName ("img-drag")):
-                i.classList.remove ("img-drag")
-            ev.target.style.visibility = "hidden"
-            scrollstr = "Here is what could happen:\n\n"
-            if path == "corn":
-                scrollstr += (
-                    "The forage diet which cattle have evolved to consume is relatively neutral on the pH scale, and their gut microbiome has adapted to this. "
-                    "Corn and other grain-based diets increase the acidity in the stomachs, disrupting the delicate microbiome balance and allowing microorganisms to develop acid resistance. "
-                    "E. Coli is commonly found in cattle and can be spread through meat products and environmental contamination from sources like feces, but they normally do not cause issues in humans since they cannot survive in the acidic environment of the human stomach. "
-                    "However, these acid-resistant strains, specifically H157:N7, can thrive in humans and wreak havoc."
-                )
-            elif path == "mbm":
-                scrollstr += (
-                    "Bovine spongiform encephalopathy (BSE) is a fatal neurodegenerative disease (a disease where neurons lose function over time) caused by prions. "
-                    "Prions are misfolded proteins which can cause normal variants of the proteins to become misfolded, causing cell death which spreads across the brain. "
-                    "Variant Creutzfeldt-Jakob Disease (vCJD) is a fatal incurable disease in humans with the primary cause being consuming beef from cows with BSE."
-                )
+        def scroll7 (path, correct):
             if correct:
-                scrollstr += "\n\nAs a bonus for correctly answering the question, you gain 50 points and the odds of things going wrong have been reduced."
-                luck = random.random () < 0.8 # 20% chance of bad luck
+                scrollstr = "\n\nAs a bonus for correctly answering the question, you gain 20 points and the worst case scenario is less likely to happen."
+                window.luck = random.random () < 0.8 # 20% chance of bad luck
             else:
-                scrollstr += "\n\nThe odds of things going wrong have increased due to your incorrect answer."
-                luck = random.random () < 0.4
-            
+                scrollstr = "\n\nThe odds of things going more wrong are higher due to your incorrect answer."
+                window.luck = random.random () < 0.4
 
             scroll_text (
-                document ["scroll6"],
-                scrollstr,
-                1,
-                0,
-                lambda: window.setTimeout (lambda: final (path, luck), 3000)
-            )
-            scroll_text (
                 document ["scroll7"],
+                scrollstr,
+                5,
+                0,
+                lambda: window.setTimeout (lambda: final (path), 3000)
+            )
+
+            scroll_text (
+                document ["scroll8"],
                 "Awaiting news as time goes on...",
-                30,
-                0
+                50,
+                0,
             )
         
-        def final (path, luck):
-            recall = not document ["question3-answers"].contains (document ["recall-notice"]) # whether the recall notice was issued
+        def final (path):
             scrollstr = ""
-            if path == "corn":
+            luck = bool (window.luck)
+            if path == "melamine":
+                scrollstr += (
+                    "You were arrested by police because tens of thousands of families bought the adulterated product. "
+                    "Melamine causes kidney stones which can lead to renal failure, bladder cancer, and death. "
+                    "The company is facing a penalty of 50 million dollars, while victims and the government both demand compensation. "
+                )
                 if luck:
                     scrollstr += (
-                        "Fortunately, acid-resistant E. Coli strains are not present in your beef products. "
-                        "Perhaps your cattle were not exposed to the bacteria, or they were able to fight off the infection.\n\n"
+                        "Fortunately, the investigation found that you were not a part of the higher-ranking corporate leaders who were the main culprits behind this scandal. "
+                        "You were sentenced with around 10 years in jail, a very light punishment in this case."
                     )
-                    if recall:
-                        scrollstr += (
-                            "However, the public has lost trust in your brand due to the mass recall and perceived risk of contamination. "
-                            "They question what you may be hiding as the recall was seemingly issued without reason. "
-                            "Your sales decline but you are able to downsize and stay afloat."
-                        )
-                        storage ["score"] = str (int (storage.get ("score", 0)) + 60)
-                    else:
-                        scrollstr += (
-                            "Your cattle continue to produce high quality beef, and you are able to grow and increase your profits. "
-                        )
-                        storage ["score"] = str (int (storage.get ("score", 0)) + 100)
+                    storage ["score"] = str (int (storage.get ("score", 0)) - 80)
                 else:
                     scrollstr += (
-                        "Unfortunately, acid-resistant E. Coli strains have spread throught your products. "
-                        "Infections have been reported across the country, with symptons ranging from diarrhea to kidney failure. "
+                        "As an investigation revealed that you were the main culprit behind approving the decision to add melamine, all public opinion and judicial arguments point against you, and you were sentenced to death."
                     )
-                    if recall:
-                        scrollstr += (
-                            "You voluntarily recalled all possibly contaminated products. "
-                            "The public praised your quick action and accurate judgement, and you were able to recover from the incident."
-                        )
-                        storage ["score"] = str (int (storage.get ("score", 0)) + 80)
-                    else:
-                        scrollstr += (
-                            "You were forced by the government to recall affected products. "
-                            "This has left a terrible impression on your brand, and you are forced to close down your farm."
-                        )
-                        storage ["score"] = str (int (storage.get ("score", 0)) - 100)
-            elif path == "mbm":
+                    luck = -1 # flag for death
+                    storage ["score"] = str (int (storage.get ("score", 0)) - 1000)
+            elif path == "water":
                 if luck:
                     scrollstr += (
-                        "You have gotten extremely lucky that no material from infected cattle found its way into the MBM. "
-                        "The abnormal cattle were quickly identified and destroyed before further contamination could occur.\n\n"
+                        "Even though you somehow sneaked past all regulatory authorities, the lack of proteins and other nutrients is still undeniable. "
+                        'This resulted in numerous undernourished newborn babies, with many occurrences of "big-headed infants" caused by malnutrition. '
+                        "Although no legal action was taken, your company's reputation took a major hit and you will only be able to sell lower-cost and lower-quality products."
                     )
-                    if recall:
-                        scrollstr += (
-                            "Perhaps due to general unfamiliarity with the disease, the recall notice did not lead to much public concern. "
-                            "You continue to do business relatively unscathed."
-                        )
-                        storage ["score"] = str (int (storage.get ("score", 0)) + 80)
-                    else:
-                        scrollstr += (
-                            "Your cattle continue to produce high quality beef, and you are able to grow and increase your profits. "
-                        )
-                        storage ["score"] = str (int (storage.get ("score", 0)) + 100)
+                    storage ["score"] = str (int (storage.get ("score", 0)) - 40)
                 else:
-                    if recall:
-                        scrollstr += (
-                            "Routine tests by the government have found that some of your cattle were infected with BSE. "
-                            "Fortunately, you were able to avert a crisis by recalling all possibly contaminated products in advance. "
-                            "Some praise you for your quick action, but others are concerned about future outbreaks on your farm."
-                        )
-                        storage ["score"] = str (int (storage.get ("score", 0)) + 50)
-                    else:
-                        scrollstr += (
-                            "Several people have been diagnosed with vCJD, and it is traced back to your farm. "
-                            "News of this rare fatal disease spreads quickly, and your farm is shut down by the government. "
-                            "Family of the victims demand compensation, and some are considering legal action."
-                        )
-                        storage ["score"] = str (int (storage.get ("score", 0)) - 200)
+                    scrollstr += (
+                        "Your diluted milk was detected by regulatory authorities during a regular sampling test. "
+                        "You got into major legal trouble and have to pay a penalty of 20 Million dollars. "
+                        "You and your company both went bankrupt."
+                    )
+                    storage ["score"] = str (int (storage.get ("score", 0)) - 100)
             
             scroll_text (
-                document ["scroll7"],
+                document ["scroll8"],
                 scrollstr,
-                1,
+                10,
                 0,
-                lambda: window.setTimeout (reflection, 3000)
+                lambda: window.setTimeout (reflection if luck != -1 else death, 3000)
             )
-            if "bse" not in storage.get ("completed", ""):
-                storage ["completed"] = storage.get ("completed", "") + " bse"
+            if luck != -1:
+                if "sanlu" not in storage.get ("completed", ""):
+                    storage ["completed"] = storage.get ("completed", "") + " sanlu"
+        
+        def death ():
+            window.setTimeout (lambda: document.body.classList.add ("fadeOut"), 5000)
 
         def reflection ():
             scroll_text (
-                document ["scroll8"],
-                "\n\n\n\nThis game demonstrates a simplified scenario of the risks and rewards of different feed choices. "
-                "A major BSE outbreak will likely never happen in the future due to strict regulations about the use of ruminant protein in cattle feed. "
-                "However, E. Coli outbreaks do still occur, and it is critical to watch for recalls and follow food safety guidelines at all times. "
-                "\n\nReload the page for a chance to see a different outcome (there are 8 in total)."
+                document ["scroll9"],
+                "\n\nThis game demonstrates a simplified scenario of the risks and rewards of different feed choices. "
+                "This scenario is based on the 三鹿 (Sanlu) milk scandal in 2008, where melamine was added to milk to increase its protein content. "
+                "Hundreds of thousands of babies were affected, with six officially dead and likely many more unreported. "
+                "It is crucial as a consumer to always stay vigilant and informed about the products you consume."
+                "\n\nThis scenario has no positive outcomes as unlike the BSE scandal, intentional adulteration of food products is always harmful. "
+                "Reload the page for a chance to see a different outcome based on probability (there are 4 in total)."
                 "\n\nThank you for playing!",
-                5,
+                3,
                 0
             )
             document ["source3"].style.display = "block"
@@ -375,7 +320,7 @@
         <p id="scroll3"></p>
         <br>
         <div style="display: none; opacity: 0;" id="question1">
-            <div class="img-container droppable" data-placeholder="Drag the substance you want to add, or leave blank to not add any." data-ondrop="scroll4_clear"></div>
+            <div style="background-image: url('media/milk.jpg')" class="img-container droppable" data-placeholder="Drag the substance you want to add, or leave blank to not add any." data-ondrop="scroll4_clear"></div>
             <div display="inline-block" class="droppable img-bank" id="question1-answers">
                 <img src="media/melamine.png" alt="Melamine" draggable="true" id="melamine" class="img-drag img-round" data-parent="question1-answers" data-ondrop="scroll4_melamine" />
                 <img src="media/water.jpg" alt="Water" draggable="true" id="water" class="img-drag img-round" data-parent="question1-answers" data-ondrop="scroll4_water" />
@@ -396,23 +341,13 @@
         </div>
         <br>
         <p id="scroll6"></p>
-        <p><a id="source2" href="" target="_blank" style="display: none;">Source / Further information</a></p>
+        <p><a id="source2" href="https://www.nutritionnews.abbott/pregnancy-childhood/kids-growth/the-signs-of-protein-deficiency-in-kids/" target="_blank" style="display: none;">Source / Further information</a></p>
         <br>
         <p id="scroll7"></p>
         <br>
-        <div style="display: none; opacity: 0;" id="question3">
-            <div class="img-container droppable" data-placeholder="Drag the recall notice here to issue it, or leave blank to not issue any."></div>
-            <div display="inline-block" class="droppable img-bank" id="question3-answers">
-                <img src="media/recall.jpg" alt="Recall notice" draggable="true" id="recall-notice" class="img-drag img-round" data-parent="question3-answers" />
-            </div>
-        </div>
-        <button id="submit3" style="display: none;">Submit</button>
-        <br>
         <p id="scroll8"></p>
-        <br>
         <p id="scroll9"></p>
-        <p id="scroll10"></p>
-        <p><a id="source3" href="https://inspection.canada.ca/en/animal-health/terrestrial-animals/diseases/reportable/bovine-spongiform-encephalopathy" target="_blank" style="display: none;">Source / Further information</a></p>
+        <p><a id="source3" href="https://www.sciencedirect.com/science/article/abs/pii/S0306919210000540" target="_blank" style="display: none;">Source / Further information</a></p>
     </div>
     <iframe id="header" src="header.html" sandbox="allow-scripts allow-same-origin allow-top-navigation"></iframe>
 </body>

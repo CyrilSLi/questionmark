@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Question Mark Project</title>
+    <meta charset="utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="media/favicon.ico">
+</head>
+<body onload="brython (2)">
+    <noscript>
+        <p>JavaScript is required to use this website.</p>
+    </noscript>
+    <script type = "text/python">
+        from browser import document, html, timer, window
+        from browser.local_storage import storage
+        import random
+
+        global skip_wait
+        skip_wait = False
+        print = window.console.log
+
+        def dragstart (event):
+            if not (type (event.target) == html.IMG and event.target.classList.contains ("img-drag")):
+                event.preventDefault ()
+                return
+            event.dataTransfer.setData ("text/plain", event.target.id)
+            event.dataTransfer.dropEffect = "move"
+        window.addEventListener ("dragstart", dragstart)
+        def dragover (event):
+            event.preventDefault ()
+            event.dataTransfer.dropEffect = "move"
+        window.addEventListener ("dragover", dragover)
+
+        def remove_placeholder ():
+            for el in document.getElementsByClassName ("img-container"):
+                if len (el.getElementsByTagName ("img")):
+                    for i in el.getElementsByClassName ("img-placeholder"):
+                        i.remove ()
+                elif not el.getElementsByClassName ("img-placeholder"):
+                    el <= html.P (el.dataset.placeholder, Class = "img-placeholder")
+                    if "ondrop" in el.dataset:
+                        globals () [el.dataset.ondrop] ()
+        def drop (event):
+            parentEl = event.target.parentElement
+            def remove_current ():
+                for img in parentEl.getElementsByTagName ("img"):
+                    document.getElementById (img.dataset.parent).appendChild (img)
+            event.preventDefault ()
+            origin = document [event.dataTransfer.getData ("text/plain")]
+            if event.target.classList.contains ("droppable") or parentEl.classList.contains ("droppable"):
+                el = event.target if event.target.classList.contains ("droppable") else parentEl
+                remove_current ()
+                el.appendChild (origin)
+                remove_placeholder ()
+                if el.classList.contains ("img-container") and "ondrop" in origin.dataset:
+                    globals () [origin.dataset.ondrop] ()
+        window.addEventListener ("drop", drop)
+
+        global scroll_timers
+        scroll_timers = {}
+        def scroll_text (el, text, speed, delay = 0, callback = lambda: None):
+            global skip_wait
+            if el in scroll_timers:
+                for t in scroll_timers.get (el, []):
+                    timer.clear_timeout (t)
+                scroll_timers [el] = []
+            el.innerHTML = ""
+            speed = 0 if skip_wait else speed
+            delay = 0 if skip_wait else delay
+            index = 0
+            def scroll ():
+                nonlocal callback, el, index, speed, text
+                if index < len (text):
+                    if text [index] == "\n":
+                        el.innerHTML += "<br>"
+                    else:
+                        el.innerHTML += text [index]
+                    index += 1
+                    scroll_timers.setdefault (el, []).append (timer.set_timeout (scroll, speed))
+                else:
+                    for t in scroll_timers.get (el, []):
+                        timer.clear_timeout (t)
+                    scroll_timers.setdefault (el, []).append (timer.set_timeout (callback, speed))
+                timer.set_timeout (scroll_site, 0)
+            scroll_timers.setdefault (el, []).append (timer.set_timeout (scroll, delay))
+
+        def scroll_site ():
+            document ["site"].scrollTop = document ["site"].scrollHeight
+        
+        def show_q (question):
+            document [question].style.display = "block"
+            document [question].classList.add ("fade-in")
+            scroll_site ()
+
+        def unbind (el):
+            el.parentNode.replaceChild (el.cloneNode (True), el)
+
+        for i in document.getElementsByClassName ("img-container"):
+            i <= html.P (i.dataset.placeholder, Class = "img-placeholder")
+
+
+        
+        scroll1 = lambda: scroll_text (document ["scroll1"], "You run a popular street vendor in Taiwan, selling deep fried snacks and fast food.", 10, 500, scroll2)
+        scroll2 = lambda: scroll_text (
+            document ["scroll2"],
+            "The extremely competitive market and ever-growing demand for cheap gustatory satisfaction necessitates extreme cost saving in all aspects of production. "
+            "You have already optimised almost every recipe and ingredient, however you notice that fryer oil still constitutes a significant part of your budget. "
+            "You see an advertisement for cheap bulk oil by a large and reputable manufacturer. "
+            "A relatively good friend of yours also whispers that they know a secret method to obtain high-quality oil almost for free.",
+            8,
+            500,
+            lambda: (scroll3 (), img1 ())
+        )
+        def img1 ():
+            document ["img1"].style.display = "block"
+            document ["img1"].classList.add ("fade-in")
+        scroll3 = lambda: scroll_text (document ["scroll3"], "What do you do?", 10, 500, question1)
+
+        def add_submit1 (choice):
+            unbind (document ["submit1"])
+            document ["submit1"].bind ("click", lambda ev: submit1 (choice, ev))
+            document ["submit1"].style.display = "block"
+        def question1 ():
+            options = [
+                "Continue using current ingredients",
+                "Reuse oil more times before discarding",
+                "Try the cheaper oil",
+                "Go with your friend's suggestion"
+            ]
+            random.shuffle (options)
+            for j, i in enumerate (options):
+                choice_el = document ["q1-c" + str (j + 1)]
+                choice_el.innerHTML = i
+                choice_el.bind ("click", lambda ev: to_be_continued ())
+                # choice_el.bind ("click", lambda ev: submit2 (choice, True if "acidity" in ev.target.innerHTML or "transmissible" in ev.target.innerHTML else False))
+
+        def to_be_continued ():
+            for i in range (1, 5):
+                unbind (document ["q1-c" + str (i)])
+            scroll_text (document ["scroll4"], "To be continued...", 10, 500)
+
+        scroll1 ()
+
+    </script>
+    <div id="site">
+        <p id="scroll1"></p>
+        <p id="scroll2"></p>
+        <br>
+        <img id="img1" src="media/street_vendor.jpg" alt="Street vendor" style="display: none;" class="img-round" />
+        <br>
+        <p id="scroll3"></p>
+        <br>
+        <div id="question1">
+            <p><a id="q1-c1"></a></p>
+            <p><a id="q1-c2"></a></p>
+            <p><a id="q1-c3"></a></p>
+            <p><a id="q1-c4"></a></p>
+        </div>
+        <br>
+        <p style="color: lightgreen;" id="scroll4"></p>
+    </div>
+    <iframe id="header" src="header.html" sandbox="allow-scripts allow-same-origin allow-top-navigation"></iframe>
+</body>
+</html>

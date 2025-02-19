@@ -6,8 +6,9 @@
     <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.min.js"></script>
     <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="media/favicon.ico">
 </head>
-<body onload="brython (2)">
+<body onload="brython (0)">
     <noscript>
         <p>JavaScript is required to use this website.</p>
     </noscript>
@@ -219,11 +220,11 @@
                     "Variant Creutzfeldt-Jakob Disease (vCJD) is a fatal incurable disease in humans with the primary cause being consuming beef from cows with BSE."
                 )
             if correct:
-                scrollstr += "\n\nAs a bonus for correctly answering the question, you gain 50 points and the odds of things going wrong have been reduced."
-                luck = random.random () < 0.8 # 20% chance of bad luck
+                scrollstr += "\n\nAs a bonus for correctly answering the question, you gain 20 points and the odds of things going wrong have been reduced."
+                window.luck = random.random () < 0.8 # 20% chance of bad luck
             else:
                 scrollstr += "\n\nThe odds of things going wrong have increased due to your incorrect answer."
-                luck = random.random () < 0.4
+                window.luck = random.random () < 0.4
             
 
             scroll_text (
@@ -231,18 +232,19 @@
                 scrollstr,
                 1,
                 0,
-                lambda: window.setTimeout (lambda: final (path, luck), 3000)
+                lambda: window.setTimeout (lambda: final (path), 3000)
             )
             scroll_text (
                 document ["scroll7"],
                 "Awaiting news as time goes on...",
-                30,
+                50,
                 0
             )
         
-        def final (path, luck):
+        def final (path):
             recall = not document ["question3-answers"].contains (document ["recall-notice"]) # whether the recall notice was issued
             scrollstr = ""
+            luck = bool (window.luck)
             if path == "corn":
                 if luck:
                     scrollstr += (
@@ -327,7 +329,7 @@
                 "\n\n\n\nThis game demonstrates a simplified scenario of the risks and rewards of different feed choices. "
                 "A major BSE outbreak will likely never happen in the future due to strict regulations about the use of ruminant protein in cattle feed. "
                 "However, E. Coli outbreaks do still occur, and it is critical to watch for recalls and follow food safety guidelines at all times. "
-                "\n\nReload the page for a chance to see a different outcome (there are 8 in total)."
+                "\n\nReload the page for a chance to see a different outcome based on probability (there are 8 in total)."
                 "\n\nThank you for playing!",
                 5,
                 0
@@ -373,7 +375,7 @@
         <p id="scroll2"></p>
         <br>
         <div style="display: none; opacity: 0;" id="question1">
-            <div class="img-container droppable" data-placeholder="Drag the feed type you want to add, or leave blank to not add any." data-ondrop="scroll3_clear"></div>
+            <div style="background-image: url('media/cattle_feed.jpg')" class="img-container droppable" data-placeholder="Drag the feed type you want to add, or leave blank to not add any." data-ondrop="scroll3_clear"></div>
             <div display="inline-block" class="droppable img-bank" id="question1-answers">
                 <img src="media/corn_feed.jpg" alt="Corn feed" draggable="true" id="corn-feed" class="img-drag img-round" data-parent="question1-answers" data-ondrop="scroll3_corn" />
                 <img src="media/meat_and_bone_meal.jpg" alt="Meat and bone meal" draggable="true" id="meat-and-bone-meal" class="img-drag img-round" data-parent="question1-answers" data-ondrop="scroll3_mbm" />

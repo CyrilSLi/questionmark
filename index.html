@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
+    <link rel="icon" href="media/favicon.ico">
     <style>
         * {
             margin: 0px;
@@ -113,6 +114,16 @@
             height: 40px;
             width: 100%;
             border: none;
+        }
+        #waka {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            height: 30px;
+            width: fit-content;
+            opacity: 0;
+            animation: 4s ease-in 1s 1 forwards fadeIn;
+            z-index: 50;
         }
     </style>
 </head>
@@ -298,10 +309,11 @@
         bseMarker.on ("click", lambda ev: visitPage ("bse.html"))
         
     </script>
+    <img id="waka" src="https://waka.hackclub.com/api/badge/U07FXPUDYDC/interval:any/project:questionmark" alt="WakaTime">
     <div id="site">
         <div id="intro-block" class="block">
             <div id="intro">
-                <h1 class="title">Question Mark Project</h1>
+                <h1 class="title">Food Scandals & Fraud</h1>
                 <h2 class="subtitle" style="--i: 0">Cyril Li, Zack Dong</h2>
                 <h2 class="subtitle" style="--i: 1">Geographic Issues of the 21st Century 20F</h2>
                 <h2 class="subtitle" style="--i: 2">Mr. Enns</h2>

@@ -257,14 +257,15 @@
                 scrollstr,
                 10,
                 0,
-                lambda: window.setTimeout (reflection if luck != -1 else death, 3000)
+                lambda: window.setTimeout (reflection if luck != -1 else death, 3000 if luck != -1 else 1000)
             )
             if luck != -1:
                 if "sanlu" not in storage.get ("completed", ""):
                     storage ["completed"] = storage.get ("completed", "") + " sanlu"
         
         def death ():
-            window.setTimeout (lambda: document.body.classList.add ("fadeOut"), 5000)
+            document <= html.DIV (Class = "block fade-in", style = "opacity: 0;")
+            window.setTimeout (lambda: document.body.classList.add ("fadeOut"), 8000)
 
         def reflection ():
             scroll_text (
